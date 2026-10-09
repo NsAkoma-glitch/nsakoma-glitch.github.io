@@ -31,6 +31,9 @@
   --accent: #c8141b;
   --accent-2: #ff2a32;
   --gold: #f2b705;
+  /* 各サービスの色（白い文字が読みやすい濃さにしています） */
+  --twitch: #9146ff;
+  --youtube: #e60000;
   --checker-a: #0b0b0d;
   --checker-b: #f4f2ee;
 
@@ -345,9 +348,14 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 }
 .btn:hover { transform: translate(3px, 3px); box-shadow: 3px 3px 0 var(--fg); }
 .btn:active { transform: translate(6px, 6px); box-shadow: 0 0 0 var(--fg); }
-.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary { background: var(--twitch); color: #fff; }
 .btn-ghost { background: var(--bg); }
-.btn-primary.is-live { background: #9146ff; }
+.btn-youtube { background: var(--youtube); color: #fff; }
+/* 配信中は Twitch ボタンが光って脈打つ */
+.btn-primary.is-live { animation: live-glow 1.4s ease-in-out infinite; }
+@keyframes live-glow {
+  50% { box-shadow: 6px 6px 0 var(--fg), 0 0 28px 6px color-mix(in srgb, var(--twitch) 70%, transparent); }
+}
 
 .scroll-hint {
   position: absolute; bottom: 28px; left: 50%; translate: -50% 0;
@@ -602,11 +610,14 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 }
 .link-card::before {
   content: ""; position: absolute; inset: 0; z-index: 0;
-  background: var(--accent); transform: translateY(101%);
+  background: var(--brand, var(--accent)); transform: translateY(101%);
   transition: transform .35s var(--ease-out);
 }
+/* マウスを乗せたときに、各サービスの色で塗られる */
+.link-card[data-brand="twitch"] { --brand: var(--twitch); }
+.link-card[data-brand="youtube"] { --brand: var(--youtube); }
 .link-card > * { position: relative; z-index: 1; }
-.link-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+.link-card:hover { border-color: var(--brand, var(--accent)); transform: translateY(-4px); }
 .link-card:hover::before { transform: translateY(0); }
 .link-card:hover, .link-card:hover .link-kicker, .link-card:hover .link-desc { color: #fff; }
 .link-kicker { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .2em; color: var(--accent-2); transition: color .2s; }
