@@ -323,6 +323,9 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .catch { font-size: clamp(1.15rem, 3.2vw, 1.6rem); font-weight: 800; line-height: 1.6; }
 .loud-word { color: var(--accent-2); display: inline-block; }
 .low-word { color: var(--gold); display: inline-block; letter-spacing: .15em; }
+/* カッコの中は少し小さく。ひとまとまりの途中で改行しないようにする */
+.catch .phrase { white-space: nowrap; }
+.catch .aside { font-size: .72em; color: var(--muted); }
 .catch:hover .loud-word { animation: shake .25s linear infinite; }
 @keyframes shake {
   0%, 100% { transform: translate(0, 0) rotate(0); }
