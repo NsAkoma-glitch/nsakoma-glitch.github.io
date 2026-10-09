@@ -333,11 +333,19 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   75% { transform: translate(-1px, -2px) rotate(-1deg); }
 }
 
-.games-line { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.games-line span {
-  font-family: var(--font-mono); font-size: .8rem; font-weight: 700;
-  border: 1px solid var(--line); padding: 2px 10px; color: var(--muted);
+/* 遊ぶゲーム：MAIN（メイン）と OTHER（その他）の2段 */
+.games-line { display: grid; gap: 8px; margin-top: 16px; }
+.games-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.games-label {
+  width: 4.5em;
+  font-family: var(--font-mono); font-size: .7rem; font-weight: 700; letter-spacing: .2em;
+  color: var(--muted);
 }
+.tag {
+  font-family: var(--font-mono); font-size: .8rem; font-weight: 700;
+  border: 1px dashed var(--line); padding: 2px 10px; color: var(--muted);
+}
+.tag-main { border: 1px solid var(--fg); color: var(--fg); }
 
 .hero-btns { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
 .btn {
@@ -684,6 +692,7 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   .art-wrap { width: min(260px, 70vw); }
   .credit { text-align: center; }
   .games-line { justify-content: center; }
+  .games-row { justify-content: center; }
   /* スマホ：Twitch は横いっぱい、X と YouTube はその下に半分ずつ並べる */
   .hero-btns { display: grid; grid-template-columns: 1fr 1fr; width: min(340px, 100%); margin-inline: auto; }
   .hero-btns .btn { justify-content: center; padding-inline: 12px; }
