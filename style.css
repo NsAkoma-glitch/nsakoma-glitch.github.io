@@ -679,12 +679,19 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 [data-tier="silver"]   { --tier: #c9ced6; }
 [data-tier="gold"]     { --tier: #f2b705; }
 [data-tier="platinum"] { --tier: #7fe0ff; }
-[data-tier="rainbow"]  { --tier: #ff6ad5; }
+[data-tier="diamond"]  { --tier: #d6f6ff; }
+/* ダイヤモンドだけは、きらきら光るグラデーション */
+[data-tier="diamond"] .joker-tier-badge,
+.joker-card[data-tier="diamond"] .joker-tier-name {
+  background: linear-gradient(110deg, #ffffff 0%, #9be7ff 25%, #ffffff 45%, #c9b8ff 65%, #9be7ff 85%, #ffffff 100%);
+  background-size: 250% 100%;
+  animation: sparkle 3s linear infinite;
+}
+@keyframes sparkle { to { background-position: -250% 0; } }
 .joker-card[data-tier] .joker-front { border-color: var(--tier); box-shadow: 0 0 28px color-mix(in srgb, var(--tier) 45%, transparent); }
 .joker-face { display: grid; gap: 6px; text-align: center; }
 .joker-tier-name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; color: var(--tier, var(--gold)); }
-.joker-card[data-tier="rainbow"] .joker-tier-name {
-  background: linear-gradient(90deg, #ff5e5e, #ffd23f, #3ee07f, #3fb8ff, #b46bff);
+.joker-card[data-tier="diamond"] .joker-tier-name {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .joker-days { font-size: 1rem; }
