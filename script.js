@@ -462,7 +462,7 @@ checkLive();
 
 
 /* ---------- 12. シェアボタン ---------- */
-const shareText = '絶叫か、低音か。VALORANT / Apex を配信している koma のページ 🎩';
+const shareText = 'うるせーkoma か、チルいkoma か。VALORANT / Apex を配信している koma のページ 🎩';
 $('#share-link').href =
   `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
 

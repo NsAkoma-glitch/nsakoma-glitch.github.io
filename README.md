@@ -1,6 +1,6 @@
 # koma — Twitch FPS Streamer Site
 
-絶叫か、低音か。Twitch で VALORANT / Apex Legends を配信している koma のサイトです。
+うるせーkoma か、チルいkoma か。Twitch で VALORANT / Apex Legends を配信している koma のサイトです。
 
 公開URL: https://nsakoma-glitch.github.io/
 
