@@ -708,6 +708,8 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 }
 .joker-tier-badge small { font-size: .65rem; font-weight: 400; letter-spacing: 0; }
 .joker-tier-msg { font-size: .9rem; white-space: pre-line; /* メッセージの改行をそのまま表示 */ }
+/* 手紙の最後の署名（右寄せ） */
+.joker-tier-sign { display: block; margin-top: 10px; text-align: right; font-size: .8rem; color: var(--muted); font-style: italic; }
 
 /* 鍵がかかっているときは、押すとガタガタ揺れる */
 .joker-card.is-locked:hover .card-inner { transform: none; animation: shake .25s linear 2; }

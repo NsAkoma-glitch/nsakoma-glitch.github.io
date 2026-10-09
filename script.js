@@ -588,6 +588,8 @@ function setJokerStatus(html, kind = '') {
 // フォローしてからの期間（months = 何か月から）でランクが上がる。
 // message は ` ` で囲んでいるので、そのまま改行すればサイトでも改行されます。
 // そのランク以上の人だけに見えるメッセージです。段を増やしたいときは、同じ形で足すだけでOK。
+// どのメッセージの最後にも、この署名が付きます（19歳のときに書いた手紙として残すので、変えない）
+const JOKER_SIGNATURE = 'by 19歳のkoma（2026年10月）';
 const JOKER_TIERS = [
   { months: 0, id: 'bronze', name: 'BRONZE', message:
 `まずはフォローありがとう！ここはフォロワーだけが見られる秘密のカードだよ！
@@ -600,8 +602,7 @@ const JOKER_TIERS = [
 あのね、君ちょっとおかしいよ笑
 でも、ありがとう😊
 こんな変なやつを応援してくれて📣
-こんな変なやつのことこれからもよろしく頼むぞ！
-by 19歳のkoma` },
+こんな変なやつのことこれからもよろしく頼むぞ！` },
 
   { months: 12, id: 'gold', name: 'GOLD', message:
 `え？一緒に四季堪能しちゃったか？
@@ -609,8 +610,7 @@ by 19歳のkoma` },
 俺は君がいつも観に来てくれて本当に嬉しいし、名前だって言ってないかもしれないけどちゃんと覚えてるよ…
 いつもありがとう😊
 今までコメントしたことなかったらこれを機にやってみようか？めっちゃ反応するで！
-これからもよろしく頼むぞ！
-by 19歳のkoma` },
+これからもよろしく頼むぞ！` },
 
   { months: 36, id: 'platinum', name: 'PLATINUM', message:
 `もう3年か…
@@ -662,7 +662,9 @@ function renderJokerTier(followedAt) {
     const left = Math.ceil((unlockDate(t) - now) / DAY);
     return `<li class="joker-tier ${open ? 'is-open' : ''}" data-tier="${t.id}">
       <span class="joker-tier-badge">${t.name}<small>${t.months ? `${t.months / 12}年〜` : 'フォローしたら'}</small></span>
-      <span class="joker-tier-msg">${open ? escapeHtml(t.message) : `🔒 あと ${left} 日で解放`}</span>
+      <span class="joker-tier-msg">${open
+        ? `${escapeHtml(t.message)}<span class="joker-tier-sign">${escapeHtml(JOKER_SIGNATURE)}</span>`
+        : `🔒 あと ${left} 日で解放`}</span>
     </li>`;
   }).join('');
   $('#joker-tiers').hidden = false;
