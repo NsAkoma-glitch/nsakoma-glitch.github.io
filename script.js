@@ -636,6 +636,31 @@ async function twitchApi(path, token) {
   return (await res.json()).data;
 }
 
+// フォロワー数の目標。超えたら次の数字が目標になる（足したり変えたりしてOK）
+const FOLLOWER_GOALS = [10, 25, 50, 100, 200, 300, 500, 1000, 2000, 5000, 10000];
+
+// 今のフォロワー数と、次の目標までの人数を表示する
+// （一覧は配信者とモデレーターしか取れないけど、合計人数だけは誰のログインでも取れる）
+async function showFollowerCount(broadcasterId, token) {
+  try {
+    const res = await fetch(`https://api.twitch.tv/helix/channels/followers?broadcaster_id=${broadcasterId}&first=1`, {
+      headers: { Authorization: `Bearer ${token}`, 'Client-Id': TWITCH_CLIENT_ID },
+    });
+    if (!res.ok) return;
+    const { total } = await res.json();
+    if (typeof total !== 'number') return;
+
+    const goal = FOLLOWER_GOALS.find((g) => g > total);
+    const box = $('#joker-followers');
+    box.innerHTML = `
+      <p class="joker-followers-now">📈 現在のフォロワー <b>${total.toLocaleString()}</b> 人</p>
+      ${goal ? `
+        <p class="joker-followers-goal">次の目標 ${goal.toLocaleString()} 人まで、あと <b>${(goal - total).toLocaleString()}</b> 人！</p>
+        <div class="joker-goal-bar" aria-hidden="true"><i style="--p:${total / goal}"></i></div>` : ''}`;
+    box.hidden = false;
+  } catch { /* 取れなかったら何も出さない */ }
+}
+
 // フォローしているか確認して、していればめくる
 async function checkFollow(token) {
   setJokerStatus('🔍 フォローしているか確認中…');
@@ -649,6 +674,7 @@ async function checkFollow(token) {
 
     if (isKoma || follow) {
       renderJokerTier(isKoma ? null : new Date(follow.followed_at));
+      showFollowerCount(koma.id, token); // 待たずに裏で取りに行く
       joker.setAttribute('aria-pressed', 'true');
       joker.classList.remove('is-locked');
       setJokerStatus(`🃏 ${escapeHtml(me.display_name)} さん、フォローありがとう！`, 'ok');
