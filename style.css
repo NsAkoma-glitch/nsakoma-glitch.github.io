@@ -495,11 +495,19 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .ladder-steps span.done { background: color-mix(in srgb, var(--accent) 70%, transparent); }
 .ladder-steps span.now { background: var(--gold); box-shadow: 0 0 18px color-mix(in srgb, var(--gold) 60%, transparent); }
 .is-visible .ladder-steps span, .no-motion .ladder-steps span { transform: scaleY(1); }
+/* 今のランクの ▲。棒1本の幅 =（全体 − すき間4px × (n−1)）÷ n
+   cur 番目の棒の中心 = 棒の幅 × (cur + 0.5) + すき間4px × cur */
+.ladder-marker { position: relative; height: 2.6em; margin-top: 6px; font-family: var(--font-mono); font-size: .7rem; }
+.ladder-marker b {
+  position: absolute; top: 0;
+  left: calc((100% - (var(--n) - 1) * 4px) / var(--n) * (var(--cur) + .5) + var(--cur) * 4px);
+  transform: translateX(-50%);
+  color: var(--gold); text-align: center; line-height: 1.3; white-space: nowrap;
+}
 .ladder-labels {
-  display: flex; justify-content: space-between; margin-top: 8px;
+  display: flex; justify-content: space-between; margin-top: 2px;
   font-family: var(--font-mono); font-size: .7rem; color: var(--muted);
 }
-.ladder-labels b { color: var(--gold); }
 
 
 /* ---------- 9. 活動時間 ---------- */

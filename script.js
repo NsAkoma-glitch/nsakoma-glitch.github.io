@@ -289,9 +289,11 @@ $$('.game-card').forEach((card) => {
     return `<span class="${state}" style="--i:${i}" title="${tier}"></span>`;
   }).join('');
 
+  // --n（棒の数）と --cur（今の位置）を CSS に渡して、▲ を今の棒の真下に置く
   ladder.innerHTML = `
     <div class="ladder-steps" style="--step:${80 / (tiers.length - 1)}%">${steps}</div>
-    <div class="ladder-labels"><span>${tiers[0]}</span><b>▲ ${tiers[current]}</b><span>${tiers.at(-1)}</span></div>`;
+    <div class="ladder-marker" style="--n:${tiers.length}; --cur:${current}"><b>▲<br>${tiers[current]}</b></div>
+    <div class="ladder-labels"><span>${tiers[0]}</span><span>${tiers.at(-1)}</span></div>`;
 });
 
 
