@@ -656,7 +656,11 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   padding: 2px 10px; white-space: nowrap;
   background: #141418; color: #f4f2ee; border: 2px solid #f4f2ee;
   font-family: var(--font-mono); font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+  /* iPhone の Safari では、裏面に重ねた部品が表に透けることがあるので、自分でも裏を隠す */
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transition: visibility 0s .35s; /* めくる動きの途中（真横を向いたころ）で消す */
 }
+.card[aria-pressed="true"] .joker-lock { visibility: hidden; }
 .card-front.joker-front { background: #141418; border-color: var(--gold); color: var(--gold); }
 .joker-front .card-text { color: #f4f2ee; }
 .joker-front .card-corner { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; }
