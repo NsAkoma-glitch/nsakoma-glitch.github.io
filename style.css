@@ -660,12 +660,42 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .card-front.joker-front { background: #141418; border-color: var(--gold); color: var(--gold); }
 .joker-front .card-text { color: #f4f2ee; }
 .joker-front .card-corner { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; }
+/* フォロー期間のランクの色 */
+[data-tier="bronze"]   { --tier: #cd7f32; }
+[data-tier="silver"]   { --tier: #c9ced6; }
+[data-tier="gold"]     { --tier: #f2b705; }
+[data-tier="platinum"] { --tier: #7fe0ff; }
+[data-tier="rainbow"]  { --tier: #ff6ad5; }
+.joker-card[data-tier] .joker-front { border-color: var(--tier); box-shadow: 0 0 28px color-mix(in srgb, var(--tier) 45%, transparent); }
+.joker-face { display: grid; gap: 6px; text-align: center; }
+.joker-tier-name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; color: var(--tier, var(--gold)); }
+.joker-card[data-tier="rainbow"] .joker-tier-name {
+  background: linear-gradient(90deg, #ff5e5e, #ffd23f, #3ee07f, #3fb8ff, #b46bff);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.joker-days { font-size: 1rem; }
+.joker-next { font-size: .75rem; font-weight: 400; color: #a5a3a0; }
+
+/* ランクごとのメッセージ一覧 */
+.joker-tiers { list-style: none; margin-top: 20px; display: grid; gap: 8px; text-align: left; }
+.joker-tier { display: grid; grid-template-columns: 7.5em 1fr; gap: 12px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); }
+.joker-tier:not(.is-open) { opacity: .55; }
+.joker-tier-badge {
+  display: grid; justify-items: center; padding: 4px 6px;
+  background: var(--tier); color: #141418;
+  font-family: var(--font-mono); font-size: .75rem; font-weight: 700; letter-spacing: .08em;
+}
+.joker-tier-badge small { font-size: .65rem; font-weight: 400; letter-spacing: 0; }
+.joker-tier-msg { font-size: .9rem; }
+
 /* 鍵がかかっているときは、押すとガタガタ揺れる */
 .joker-card.is-locked:hover .card-inner { transform: none; animation: shake .25s linear 2; }
 
 @media (max-width: 720px) {
   .joker-area { grid-template-columns: 1fr; text-align: center; }
   .joker-card { width: min(220px, 70%); justify-self: center; }
+  .joker-tier { grid-template-columns: 1fr; gap: 6px; }
+  .joker-tier-badge { justify-self: start; grid-auto-flow: column; gap: 8px; align-items: baseline; }
 }
 
 

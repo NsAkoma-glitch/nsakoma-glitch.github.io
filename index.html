@@ -269,6 +269,8 @@
             押すと Twitch のログイン画面に移動して、フォローしているか確認します。</p>
           <p class="joker-privacy">※ ログイン情報はフォローの確認にだけ使い、koma にも誰にも送られません。</p>
           <p class="joker-status" id="joker-status" role="status" aria-live="polite"></p>
+          <!-- フォロー期間ごとのメッセージ一覧（script.js の JOKER_TIERS から作られます） -->
+          <ol class="joker-tiers" id="joker-tiers" hidden></ol>
         </div>
         <button class="card joker-card is-locked" id="joker" type="button" aria-pressed="false" aria-label="フォロワー限定のジョーカーカード">
           <span class="card-inner">
@@ -277,11 +279,10 @@
             </span>
             <span class="card-front joker-front" data-suit="🃏">
               <span class="card-corner">JOKER</span>
-              <span class="card-text">
-                <!-- ↓ ここがフォロワー限定のメッセージ。koma さんの言葉に差し替える -->
-                フォローありがとう！<br>
-                ここはフォロワーだけが見られる秘密の場所。<br>
-                中身はこれから追加していくので、お楽しみに！
+              <span class="card-text joker-face">
+                <span class="joker-tier-name" id="joker-tier-name">JOKER</span>
+                <span class="joker-days" id="joker-days"></span>
+                <span class="joker-next" id="joker-next"></span>
               </span>
             </span>
           </span>

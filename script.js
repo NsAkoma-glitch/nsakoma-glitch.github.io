@@ -561,6 +561,56 @@ function setJokerStatus(html, kind = '') {
   jokerStatus.dataset.kind = kind;
 }
 
+// フォローしてからの期間で、半年ごとにランクが上がる。
+// message の中身を書き換えれば、そのランク以上の人だけに見えるメッセージになります。
+// 段を増やしたいときは、同じ形で下に1行足すだけでOK。
+const JOKER_TIERS = [
+  { months: 0,  id: 'bronze',   name: 'BRONZE',   message: 'フォローありがとう！ここはフォロワーだけが見られる秘密の場所。（仮のメッセージ）' },
+  { months: 6,  id: 'silver',   name: 'SILVER',   message: '半年も見てくれてありがとう！（仮のメッセージ）' },
+  { months: 12, id: 'gold',     name: 'GOLD',     message: '1年も一緒にいてくれてるの、マジで感謝。（仮のメッセージ）' },
+  { months: 18, id: 'platinum', name: 'PLATINUM', message: '1年半…もう古参さんやん。（仮のメッセージ）' },
+  { months: 24, id: 'rainbow',  name: 'RAINBOW',  message: '2年以上。もう家族です。（仮のメッセージ）' },
+];
+
+const DAY = 24 * 60 * 60 * 1000;
+// 日付に◯か月を足す（月末の日付がずれないように調整）
+function addMonths(date, months) {
+  const d = new Date(date);
+  const day = d.getDate();
+  d.setMonth(d.getMonth() + months);
+  if (d.getDate() !== day) d.setDate(0); // 例: 8/31 + 6か月 → 2/28
+  return d;
+}
+
+// ランクに合わせてカードとメッセージ一覧を描く
+// followedAt が null のときは koma 本人 → 全部見える
+function renderJokerTier(followedAt) {
+  const now = new Date();
+  const unlockDate = (tier) => (followedAt ? addMonths(followedAt, tier.months) : new Date(0));
+  const unlocked = JOKER_TIERS.filter((t) => unlockDate(t) <= now);
+  const tier = unlocked.at(-1);
+  const next = JOKER_TIERS[unlocked.length];
+  const days = followedAt ? Math.floor((now - followedAt) / DAY) + 1 : null;
+
+  joker.dataset.tier = tier.id;
+  $('#joker-tier-name').textContent = `${tier.name} JOKER`;
+  $('#joker-days').textContent = days ? `フォロー ${days} 日目` : 'koma 本人';
+  $('#joker-next').textContent = next
+    ? `あと ${Math.ceil((unlockDate(next) - now) / DAY)} 日で ${next.name}`
+    : '最高ランク！';
+
+  // 解放済みはメッセージ、まだのものは鍵と解放までの日数
+  $('#joker-tiers').innerHTML = JOKER_TIERS.map((t) => {
+    const open = unlockDate(t) <= now;
+    const left = Math.ceil((unlockDate(t) - now) / DAY);
+    return `<li class="joker-tier ${open ? 'is-open' : ''}" data-tier="${t.id}">
+      <span class="joker-tier-badge">${t.name}<small>${t.months ? `${t.months / 12}年〜` : 'フォローしたら'}</small></span>
+      <span class="joker-tier-msg">${open ? escapeHtml(t.message) : `🔒 あと ${left} 日で解放`}</span>
+    </li>`;
+  }).join('');
+  $('#joker-tiers').hidden = false;
+}
+
 // Twitch のログイン画面へ
 function loginWithTwitch() {
   // state: なりすまし防止のための使い捨ての合言葉。戻ってきたときに同じか確かめる
@@ -593,10 +643,12 @@ async function checkFollow(token) {
     const [me] = await twitchApi('users', token);                       // ログインした人
     const [koma] = await twitchApi(`users?login=${TWITCH_ID}`, token);  // koma
     const isKoma = me.id === koma.id;
-    const follows = isKoma || (await twitchApi(
-      `channels/followed?user_id=${me.id}&broadcaster_id=${koma.id}`, token)).length > 0;
+    // フォローしていれば、followed_at（フォローした日時）が返ってくる
+    const [follow] = isKoma ? [null] : await twitchApi(
+      `channels/followed?user_id=${me.id}&broadcaster_id=${koma.id}`, token);
 
-    if (follows) {
+    if (isKoma || follow) {
+      renderJokerTier(isKoma ? null : new Date(follow.followed_at));
       joker.setAttribute('aria-pressed', 'true');
       joker.classList.remove('is-locked');
       setJokerStatus(`🃏 ${escapeHtml(me.display_name)} さん、フォローありがとう！`, 'ok');
