@@ -677,6 +677,7 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .joker-front .card-text { color: #f4f2ee; }
 .joker-front .card-corner { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; }
 /* フォロー期間のランクの色 */
+[data-tier="rookie"]   { --tier: #8a8a93; } /* まだフォローしていない人 */
 [data-tier="bronze"]   { --tier: #cd7f32; }
 [data-tier="silver"]   { --tier: #c9ced6; }
 [data-tier="gold"]     { --tier: #f2b705; }

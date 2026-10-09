@@ -696,6 +696,22 @@ function renderJokerTier(followedAt) {
   $('#joker-rank-label').hidden = false;
 }
 
+// ログインしたけど、まだフォローしていない人は ROOKIE
+// カードはめくれるけど、メッセージは全部鍵つき
+function renderJokerRookie() {
+  joker.dataset.tier = 'rookie';
+  $('#joker-tier-name').textContent = 'ROOKIE JOKER';
+  $('#joker-days').textContent = 'まずはフォローしないと！';
+  $('#joker-next').textContent = 'まだフォローしてないよ…';
+  $('#joker-tiers').innerHTML = JOKER_TIERS.map((t) => `
+    <li class="joker-tier" data-tier="${t.id}">
+      <span class="joker-tier-badge">${t.name}<small>${t.months ? `${t.months / 12}年〜` : 'フォローしたら'}</small></span>
+      <span class="joker-tier-msg">🔒 ${t.months ? `フォローして ${t.months / 12} 年で解放` : 'フォローしたらすぐ解放！'}</span>
+    </li>`).join('');
+  $('#joker-tiers').hidden = false;
+  $('#joker-rank-label').hidden = false;
+}
+
 // Twitch のログイン画面へ
 function loginWithTwitch() {
   // state: なりすまし防止のための使い捨ての合言葉。戻ってきたときに同じか確かめる
@@ -735,13 +751,18 @@ async function checkFollow(token) {
     if (isKoma || follow) {
       renderJokerTier(isKoma ? null : new Date(follow.followed_at));
       joker.setAttribute('aria-pressed', 'true');
-      joker.classList.remove('is-locked');
+      joker.classList.remove('is-locked', 'is-rookie');
       setJokerStatus(`🃏 ${escapeHtml(me.display_name)} さん、フォローありがとう！`, 'ok');
       toast('🃏 ジョーカー解放！');
     } else {
+      renderJokerRookie();
+      joker.setAttribute('aria-pressed', 'true');
+      joker.classList.remove('is-locked');
+      joker.classList.add('is-rookie');
       setJokerStatus(
         `😢 ${escapeHtml(me.display_name)} さんは、まだフォローしていないみたい…<br>
-         <a href="https://www.twitch.tv/${TWITCH_ID}" target="_blank" rel="noopener">Twitch でフォロー</a>してから、もう一度カードを押してね！`,
+         まずは <a href="https://www.twitch.tv/${TWITCH_ID}" target="_blank" rel="noopener">Twitch でフォロー</a>してね！<br>
+         フォローしたら、ROOKIE のカードを押すともう一度チェックするよ。`,
         'ng');
     }
   } catch (err) {
@@ -759,7 +780,9 @@ function escapeHtml(text) {
 }
 
 joker.addEventListener('click', () => {
-  if (!joker.classList.contains('is-locked')) {
+  // 鍵がかかっている / ROOKIE のときは、押すたびにフォローを確認し直す
+  const needsCheck = joker.classList.contains('is-locked') || joker.classList.contains('is-rookie');
+  if (!needsCheck) {
     // 解放済みなら、ふつうのカードと同じように裏返せる
     joker.setAttribute('aria-pressed', String(joker.getAttribute('aria-pressed') !== 'true'));
     return;
