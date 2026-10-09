@@ -584,7 +584,14 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 
 
 /* ---------- 11. リンク ---------- */
-.link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; }
+/* パソコンは3列（シェアのカードだけ2列ぶん）、タブレットは2列、スマホは1列 */
+.link-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.link-card-wide { grid-column: span 2; }
+@media (max-width: 900px) { .link-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) {
+  .link-grid { grid-template-columns: 1fr; }
+  .link-card-wide { grid-column: auto; }
+}
 .link-card {
   position: relative; display: grid; gap: 4px; align-content: start;
   padding: 28px 24px 56px;
