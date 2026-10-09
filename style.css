@@ -611,6 +611,15 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   font-family: var(--font-display); line-height: 1.1; text-align: center; font-size: 1.1rem;
 }
 .card-text { position: relative; z-index: 1; color: #141418; font-weight: 700; font-size: clamp(.85rem, 1.6vw, 1rem); line-height: 1.7; }
+/* スマホではカードが小さいので、角のマークと文字がかぶらないよう詰める */
+@media (max-width: 560px) {
+  .card-front { align-content: start; padding: 54px 12px 12px; }
+  .card-corner { top: 10px; left: 12px; font-size: 1rem; }
+  .card-text { font-size: .8rem; line-height: 1.6; }
+}
+
+/* 文中のリンク */
+.inline-link { color: var(--fg); font-weight: 800; text-decoration-color: var(--twitch); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
 
 /* ---------- 11. リンク ---------- */
