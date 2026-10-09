@@ -410,6 +410,12 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .mode-card-loud:hover .mode-name { animation: shake .2s linear infinite; }
 .mode-card-low .mode-name { letter-spacing: .12em; }
 .mode-desc { max-width: 28em; }
+.mode-note {
+  justify-self: start;
+  font-size: .85rem; font-weight: 800;
+  padding: 2px 10px;
+  border: 2px solid currentColor;
+}
 .mode-meter {
   margin-top: auto; height: 36px;
   display: block;
