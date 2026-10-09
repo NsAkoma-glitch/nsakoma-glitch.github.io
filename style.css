@@ -700,7 +700,7 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   font-family: var(--font-mono); font-size: .75rem; font-weight: 700; letter-spacing: .08em;
 }
 .joker-tier-badge small { font-size: .65rem; font-weight: 400; letter-spacing: 0; }
-.joker-tier-msg { font-size: .9rem; }
+.joker-tier-msg { font-size: .9rem; white-space: pre-line; /* メッセージの改行をそのまま表示 */ }
 
 /* 鍵がかかっているときは、押すとガタガタ揺れる */
 .joker-card.is-locked:hover .card-inner { transform: none; animation: shake .25s linear 2; }
