@@ -393,6 +393,16 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .title-en::before { content: "// "; color: var(--muted); }
 .lead { color: var(--muted); margin-bottom: 40px; }
 .lead small { font-size: .85em; }
+/* 「カード押してみ！」の呼びかけ */
+.lead:has(+ .try-cards) { margin-bottom: 16px; }
+.try-cards {
+  display: inline-block; margin-bottom: 24px;
+  font-weight: 800; color: var(--gold);
+  animation: nudge 1.6s ease-in-out infinite;
+}
+.try-cards span { display: inline-block; } /* 文の途中で改行しない */
+:root[data-mode="loud"] .try-cards { color: var(--accent); } /* 白い背景では金色が読みにくいので赤に */
+@keyframes nudge { 50% { transform: translateY(4px); } }
 
 /* スクロールで現れる（JSが動いたときだけ隠す） */
 .js .reveal {
