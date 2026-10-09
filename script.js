@@ -693,6 +693,7 @@ function renderJokerTier(followedAt) {
     </li>`;
   }).join('');
   $('#joker-tiers').hidden = false;
+  $('#joker-rank-label').hidden = false;
 }
 
 // Twitch のログイン画面へ

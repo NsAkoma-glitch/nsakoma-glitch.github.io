@@ -26,8 +26,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <!-- ?v= の数字を変えると、スマホに残った古いファイルではなく新しいファイルを読み込みます。
      style.css や script.js を変えたら、この数字も変える（日付＋その日の何回目、など） -->
-<link rel="stylesheet" href="style.css?v=2026100901">
-<script src="script.js?v=2026100901" defer></script>
+<link rel="stylesheet" href="style.css?v=2026100902">
+<script src="script.js?v=2026100902" defer></script>
 </head>
 <body>
 
@@ -275,9 +275,12 @@
             してなかったら残念だけどみれないんだ💦</p>
           <p class="joker-privacy">※ ログイン情報はフォローの確認にだけ使い、koma にも誰にも送られません。</p>
           <p class="joker-status" id="joker-status" role="status" aria-live="polite"></p>
-          <!-- フォロー期間ごとのメッセージ一覧（script.js の JOKER_TIERS から作られます） -->
-          <ol class="joker-tiers" id="joker-tiers" hidden></ol>
         </div>
+        <!-- フォロー期間ごとのメッセージ一覧（script.js の JOKER_TIERS から作られます） -->
+        <ol class="joker-tiers" id="joker-tiers" hidden></ol>
+        <!-- カード（めくれたら「今のあなたのランク」になる） -->
+        <div class="joker-slot">
+        <p class="joker-rank-label" id="joker-rank-label" hidden><span>YOUR RANK</span>今のあなたのランク</p>
         <button class="card joker-card is-locked" id="joker" type="button" aria-pressed="false" aria-label="フォロワー限定のジョーカーカード">
           <span class="card-inner">
             <span class="card-back joker-back">
@@ -293,6 +296,7 @@
             </span>
           </span>
         </button>
+        </div>
       </div>
     </div>
   </section>

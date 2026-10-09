@@ -638,7 +638,9 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 /* フォロワー限定のジョーカー */
 .joker-area {
   margin-top: 56px; padding: clamp(20px, 4vw, 40px);
-  display: grid; grid-template-columns: 1fr 240px; gap: 40px; align-items: center;
+  /* パソコン：左に説明とメッセージ、右にカード。スマホ：説明 → カード → メッセージ */
+  display: grid; grid-template-columns: 1fr 240px; column-gap: 40px; align-items: center;
+  grid-template-areas: "info slot" "tiers slot";
   border: 2px dashed color-mix(in srgb, var(--twitch) 60%, transparent);
   background: color-mix(in srgb, var(--twitch) 6%, transparent);
 }
@@ -706,8 +708,19 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .joker-days { font-size: 1rem; }
 .joker-next { font-size: .75rem; font-weight: 400; color: #a5a3a0; }
 
+.joker-info { grid-area: info; }
+.joker-slot { grid-area: slot; display: grid; gap: 10px; justify-items: center; }
+/* めくれたあとは、カードを上にくっつけてスクロールしてもついてくる */
+.joker-area:has(.joker-tiers:not([hidden])) .joker-slot {
+  align-self: start; position: sticky; top: calc(var(--nav-h) + 20px);
+}
+.joker-rank-label { text-align: center; font-weight: 800; }
+.joker-rank-label span {
+  display: block; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .25em; color: var(--twitch);
+}
+
 /* ランクごとのメッセージ一覧 */
-.joker-tiers { list-style: none; margin-top: 20px; display: grid; gap: 8px; text-align: left; }
+.joker-tiers { grid-area: tiers; list-style: none; margin-top: 20px; display: grid; gap: 8px; text-align: left; }
 .joker-tier { display: grid; grid-template-columns: 7.5em 1fr; gap: 12px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); }
 .joker-tier:not(.is-open) { opacity: .55; }
 .joker-tier-badge {
@@ -724,7 +737,9 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .joker-card.is-locked:hover .card-inner { transform: none; animation: shake .25s linear 2; }
 
 @media (max-width: 720px) {
-  .joker-area { grid-template-columns: 1fr; text-align: center; }
+  .joker-area { grid-template-columns: 1fr; grid-template-areas: "info" "slot" "tiers"; row-gap: 24px; text-align: center; }
+  .joker-area:has(.joker-tiers:not([hidden])) .joker-slot { position: static; }
+  .joker-slot { width: 100%; }
   .joker-card { width: min(220px, 70%); justify-self: center; }
   .joker-tier { grid-template-columns: 1fr; gap: 6px; }
   .joker-tier-badge { justify-self: start; grid-auto-flow: column; gap: 8px; align-items: baseline; }
