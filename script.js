@@ -612,7 +612,10 @@ const JOKER_TIERS = [
 今までコメントしたことなかったらこれを機にやってみようか？めっちゃ反応するで！
 これからもよろしく頼むぞ！` },
 
-  { months: 36, id: 'platinum', name: 'PLATINUM', message:
+  // message を空（''）にしておくと「準備中」と表示されます
+  { months: 24, id: 'platinum', name: 'PLATINUM', message: '' },
+
+  { months: 36, id: 'diamond', name: 'DIAMOND', message:
 `もう3年か…
 高校生活まるまる一緒に過ごしたのと同じだからな。普通に…
 もしかしたら一緒に過ごしてるやつも居るかもな笑
@@ -620,13 +623,15 @@ const JOKER_TIERS = [
 なんか恥ずいけど、マジでありがとうやで😊
 これから先も頼むで！コメント待ってるで！` },
 
-  { months: 60, id: 'diamond', name: 'DIAMOND', message:
+  { months: 60, id: 'master', name: 'MASTER', message:
 `5年はもう古参超えて家族です。
 5年も活動している自分にもびっくりやし、それをずっとフォローしている君にもびっくり笑
 あのー、たぶんずっと言ってると思うけどほんまにありがとう😊
 これねマッッジで感謝しているからね！
 ほんまにありがとう😊
 これからも支えてやってや！` },
+
+  { months: 84, id: 'predator', name: 'PREDATOR', message: '' },
 ];
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -662,9 +667,11 @@ function renderJokerTier(followedAt) {
     const left = Math.ceil((unlockDate(t) - now) / DAY);
     return `<li class="joker-tier ${open ? 'is-open' : ''}" data-tier="${t.id}">
       <span class="joker-tier-badge">${t.name}<small>${t.months ? `${t.months / 12}年〜` : 'フォローしたら'}</small></span>
-      <span class="joker-tier-msg">${open
-        ? `${escapeHtml(t.message)}<span class="joker-tier-sign">${escapeHtml(JOKER_SIGNATURE)}</span>`
-        : `🔒 あと ${left} 日で解放`}</span>
+      <span class="joker-tier-msg">${!open
+        ? `🔒 あと ${left} 日で解放`
+        : t.message
+          ? `${escapeHtml(t.message)}<span class="joker-tier-sign">${escapeHtml(JOKER_SIGNATURE)}</span>`
+          : '✍️ メッセージ準備中…お楽しみに！'}</span>
     </li>`;
   }).join('');
   $('#joker-tiers').hidden = false;

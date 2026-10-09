@@ -678,8 +678,17 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 [data-tier="bronze"]   { --tier: #cd7f32; }
 [data-tier="silver"]   { --tier: #c9ced6; }
 [data-tier="gold"]     { --tier: #f2b705; }
-[data-tier="platinum"] { --tier: #7fe0ff; }
+[data-tier="platinum"] { --tier: #4fd1c5; }
 [data-tier="diamond"]  { --tier: #d6f6ff; }
+[data-tier="master"]   { --tier: #b06bff; }
+[data-tier="predator"] { --tier: #ff3b3b; }
+/* プレデターは赤く脈打つ */
+.joker-card[data-tier="predator"] .joker-front { animation: predator-glow 1.6s ease-in-out infinite; }
+.joker-card[data-tier="predator"] .joker-tier-name { text-shadow: 0 0 12px rgba(255, 59, 59, .8); }
+[data-tier="predator"] .joker-tier-badge { color: #fff; }
+@keyframes predator-glow {
+  50% { box-shadow: 0 0 48px rgba(255, 59, 59, .85); }
+}
 /* ダイヤモンドだけは、きらきら光るグラデーション */
 [data-tier="diamond"] .joker-tier-badge,
 .joker-card[data-tier="diamond"] .joker-tier-name {
