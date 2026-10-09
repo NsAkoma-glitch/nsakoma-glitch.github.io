@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ja" data-mode="low">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>koma | Twitch FPS Streamer</title>
+<meta name="description" content="絶叫か、低音か。Twitch で VALORANT / Apex Legends を配信している koma のページ。">
+<meta name="theme-color" content="#111114">
+
+<!-- AI学習への利用拒否の意思表示（対応しているクローラーに効きます） -->
+<meta name="robots" content="noai, noimageai">
+
+<!-- X（Twitter）などでURLを貼ったときに出るカードの情報（OGP） -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="koma | Twitch FPS Streamer">
+<meta property="og:description" content="絶叫か、低音か。今夜はどっちのkoma？ VALORANT / Apex Legends 配信中。">
+<meta property="og:url" content="https://nsakoma-glitch.github.io/">
+<!-- カード画像。koma.png を置いたら、そのまま使われます -->
+<meta property="og:image" content="https://nsakoma-glitch.github.io/koma.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@KIM_koma11">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+
+<!-- ===== オープニング演出（市松模様のタイルがめくれて幕が開く） ===== -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-tiles" id="intro-tiles"></div>
+  <div class="intro-logo">
+    <svg class="hat" viewBox="0 0 64 64"><use href="#icon-hat"/></svg>
+    <span>IT'S SHOWTIME</span>
+  </div>
+</div>
+
+<!-- ===== FPS風の照準カーソル（マウス操作の端末だけ） ===== -->
+<div class="crosshair" id="crosshair" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
+
+<!-- スクロールの進み具合 -->
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- ===== ナビゲーション ===== -->
+<nav class="nav" aria-label="メインメニュー">
+  <a class="nav-logo" href="#top">
+    <svg class="hat" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-hat"/></svg>koma
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">ABOUT</a></li>
+    <li><a href="#games">GAMES</a></li>
+    <li><a href="#time">TIME</a></li>
+    <li><a href="#welcome">WELCOME</a></li>
+    <li><a href="#links">LINKS</a></li>
+  </ul>
+  <a class="live-pill" id="live-pill" href="https://www.twitch.tv/nsa_koma" target="_blank" rel="noopener">
+    <span class="dot"></span><span class="live-text">OFFLINE</span>
+  </a>
+  <button class="mode-toggle" id="mode-toggle" type="button" aria-label="絶叫モードと低音モードを切り替える">
+    <span class="mode-low">低音</span><span class="mode-loud">絶叫</span>
+  </button>
+</nav>
+
+<!-- ===== 1. ヒーロー ===== -->
+<header class="hero" id="top">
+  <div class="spotlight" aria-hidden="true"></div>
+  <div class="stage-floor" aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <div class="art-wrap">
+      <div class="art" data-tilt>
+        <!-- koma.png を index.html と同じ場所に置くと表示されます -->
+        <img src="koma.png" alt="koma のイラスト" width="1390" height="2000" draggable="false"
+             onerror="this.parentElement.classList.add('no-image')">
+        <div class="art-placeholder">
+          <svg class="hat" viewBox="0 0 64 64" aria-hidden="true"><use href="#icon-hat"/></svg>
+          <span>koma.png をここに</span>
+        </div>
+        <div class="glare" aria-hidden="true"></div>
+      </div>
+      <p class="credit">Illustration by 親友</p>
+    </div>
+
+    <div class="hero-text">
+      <p class="eyebrow"><span>TWITCH</span> FPS STREAMER</p>
+      <h1 class="name" id="name" aria-label="koma">koma</h1>
+      <p class="catch">
+        <span class="loud-word">絶叫</span>か、<span class="low-word">低音</span>か。<br>
+        今夜はどっちの koma？
+      </p>
+      <p class="games-line"><span>VALORANT</span><span>Apex Legends</span></p>
+      <div class="hero-btns">
+        <a class="btn btn-primary" id="hero-watch" href="https://www.twitch.tv/nsa_koma" target="_blank" rel="noopener">
+          <span class="btn-icon">▶</span><span class="btn-label">Twitch で見る</span>
+        </a>
+        <a class="btn btn-ghost" href="https://x.com/KIM_koma11" target="_blank" rel="noopener">X をフォロー</a>
+      </div>
+    </div>
+  </div>
+
+  <a class="scroll-hint" href="#about" aria-label="下へスクロール"><span></span></a>
+</header>
+
+<main>
+  <!-- ===== 配信中のときだけ出るプレイヤー ===== -->
+  <section class="section live-section" id="live" hidden>
+    <div class="wrap">
+      <h2 class="title"><span class="title-en">ON AIR</span>いま配信中！</h2>
+      <div class="player" id="player"></div>
+    </div>
+  </section>
+
+  <!-- ===== 2. どんな配信？ ===== -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <h2 class="title reveal"><span class="title-en">ABOUT</span>どんな配信？</h2>
+      <p class="lead reveal">FPS 中心のゲーム配信。テンションはだいたい、この2つのどちらか。<br>
+        <small>カードを押すと、サイト全体がそのモードに切り替わります。</small></p>
+
+      <div class="modes">
+        <button class="mode-card mode-card-loud reveal" type="button" data-set-mode="loud">
+          <span class="mode-num">01</span>
+          <span class="mode-name">絶叫モード</span>
+          <span class="mode-desc">撃ち合い、クラッチ、まさかの事故。感情がそのまま声に出るタイプ。</span>
+          <span class="mode-meter" style="--v:.95" aria-hidden="true"></span>
+          <span class="mode-meter-label">VOLUME</span>
+        </button>
+        <button class="mode-card mode-card-low reveal" type="button" data-set-mode="low">
+          <span class="mode-num">02</span>
+          <span class="mode-name">低音モード</span>
+          <span class="mode-desc">集中しているときや、まったり雑談のときは低めの落ち着いた声で。</span>
+          <span class="mode-meter" style="--v:.3" aria-hidden="true"></span>
+          <span class="mode-meter-label">VOLUME</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>VALORANT ♠ APEX LEGENDS ♥ 絶叫 ♣ 低音 ♦ KOMA ♠ VALORANT ♥ APEX LEGENDS ♣ 絶叫 ♦ 低音 ♠ KOMA ♥&nbsp;</span>
+      <span>VALORANT ♠ APEX LEGENDS ♥ 絶叫 ♣ 低音 ♦ KOMA ♠ VALORANT ♥ APEX LEGENDS ♣ 絶叫 ♦ 低音 ♠ KOMA ♥&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- ===== 3. よく遊ぶゲーム ===== -->
+  <section class="section" id="games">
+    <div class="wrap">
+      <h2 class="title reveal"><span class="title-en">GAMES</span>よく遊ぶゲーム</h2>
+      <p class="lead reveal">ランク中心。参加型をやる日もあります。</p>
+
+      <div class="game-grid">
+        <!-- data-tiers: ランクの一覧 / data-current: 今のランクの位置（0から数える） -->
+        <article class="game-card reveal" data-tilt
+                 data-tiers="Iron,Bronze,Silver,Gold,Platinum,Diamond,Ascendant,Immortal,Radiant"
+                 data-current="3">
+          <p class="game-genre">TACTICAL SHOOTER</p>
+          <h3 class="game-title">VALORANT</h3>
+          <p class="game-rank"><span class="rank-label">RANK</span>GOLD 2</p>
+          <div class="ladder" aria-hidden="true"></div>
+          <p class="game-note">ランクを中心にプレイ中。</p>
+        </article>
+
+        <article class="game-card reveal" data-tilt
+                 data-tiers="Rookie,Bronze,Silver,Gold,Platinum,Diamond,Master,Predator"
+                 data-current="5">
+          <p class="game-genre">BATTLE ROYALE</p>
+          <h3 class="game-title">Apex Legends</h3>
+          <p class="game-rank"><span class="rank-label">RANK</span>DIAMOND帯</p>
+          <div class="ladder" aria-hidden="true"></div>
+          <p class="game-note">だいたいダイヤ帯をうろうろしています。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 活動時間（24時間の時計） ===== -->
+  <section class="section" id="time">
+    <div class="wrap time-wrap">
+      <div class="time-text">
+        <h2 class="title reveal"><span class="title-en">TIME</span>活動時間</h2>
+        <p class="time-main reveal">主に<em>夜</em>に配信</p>
+        <p class="lead reveal">曜日・時間は不定期です。配信開始は X でお知らせします。</p>
+        <p class="now-status reveal" id="now-status"></p>
+      </div>
+      <div class="dial reveal">
+        <!-- script.js が中身を描きます -->
+        <svg id="dial" viewBox="0 0 240 240" role="img" aria-label="24時間の時計。夜19時から深夜2時ごろが主な活動時間"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. 初見さんへ（トランプをめくる） ===== -->
+  <section class="section" id="welcome">
+    <div class="wrap">
+      <h2 class="title reveal"><span class="title-en">WELCOME</span>初見さんへ</h2>
+      <p class="lead reveal">カードをめくってください。種も仕掛けもありません。</p>
+
+      <div class="cards">
+        <button class="card reveal" type="button" aria-pressed="false">
+          <span class="card-inner">
+            <span class="card-back"></span>
+            <span class="card-front" data-suit="♠">
+              <span class="card-corner">A<br>♠</span>
+              <span class="card-text">コメント大歓迎。「初見です」の一言だけでもうれしいです。</span>
+            </span>
+          </span>
+        </button>
+        <button class="card reveal" type="button" aria-pressed="false">
+          <span class="card-inner">
+            <span class="card-back"></span>
+            <span class="card-front red" data-suit="♥">
+              <span class="card-corner">K<br>♥</span>
+              <span class="card-text">見るだけ（ROM）でも全然 OK。</span>
+            </span>
+          </span>
+        </button>
+        <button class="card reveal" type="button" aria-pressed="false">
+          <span class="card-inner">
+            <span class="card-back"></span>
+            <span class="card-front" data-suit="♣">
+              <span class="card-corner">Q<br>♣</span>
+              <span class="card-text">ゲームが上手くても下手でも、気軽にどうぞ。</span>
+            </span>
+          </span>
+        </button>
+        <button class="card reveal" type="button" aria-pressed="false">
+          <span class="card-inner">
+            <span class="card-back"></span>
+            <span class="card-front red" data-suit="♦">
+              <span class="card-corner">J<br>♦</span>
+              <span class="card-text">指示コメ・ネタバレはほどほどにお願いします。</span>
+            </span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6〜8. 応援・リンク・コラボ ===== -->
+  <section class="section" id="links">
+    <div class="wrap">
+      <h2 class="title reveal"><span class="title-en">LINKS</span>応援・コラボ</h2>
+      <p class="lead reveal">フォローしてもらえるだけで、とても励みになります。</p>
+
+      <div class="link-grid">
+        <a class="link-card reveal" href="https://www.twitch.tv/nsa_koma" target="_blank" rel="noopener">
+          <span class="link-kicker">MAIN STAGE</span>
+          <strong>Twitch</strong>
+          <span class="link-desc">フォローすると配信開始の通知が届きます</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="link-card reveal" href="https://x.com/KIM_koma11" target="_blank" rel="noopener">
+          <span class="link-kicker">NEWS / COLLAB</span>
+          <strong>X</strong>
+          <span class="link-desc">配信告知はこちら。コラボのお誘いは DM へ</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="link-card reveal" href="https://www.amazon.co.jp/hz/wishlist/ls/1W5BACUEN4CA8" target="_blank" rel="noopener">
+          <span class="link-kicker">SUPPORT</span>
+          <strong>ほしい物リスト</strong>
+          <span class="link-desc">Amazon</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="link-card reveal" id="share-link" href="https://x.com/intent/post" target="_blank" rel="noopener">
+          <span class="link-kicker">SPREAD THE WORD</span>
+          <strong>このサイトをシェア</strong>
+          <span class="link-desc">X でポストして koma を広める</span>
+          <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <p class="collab-note reveal">コラボのお誘いは <a href="https://x.com/KIM_koma11" target="_blank" rel="noopener">X の DM</a> までお気軽にどうぞ。<br>
+        ゲーム名・希望日時・配信 URL を添えてもらえるとスムーズです。</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p class="footer-logo">koma</p>
+  <p>Illustration by 親友</p>
+  <p>当サイトのイラスト・画像の無断転載、および AI 学習への利用を禁止します。</p>
+  <p class="footer-small">© <span id="year">2026</span> koma ・ <span class="hint" title="何かが起きるかも">↑↑↓↓←→←→BA</span></p>
+</footer>
+
+<!-- 魔法の演出用のキャンバス -->
+<canvas class="fx" id="fx" aria-hidden="true"></canvas>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- シルクハットのアイコン（何度も使うので1回だけ定義して <use> で呼び出す） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="icon-hat" viewBox="0 0 64 64">
+    <path d="M18 8h28l-3 34H21z" fill="currentColor"/>
+    <path d="M20.5 34h23l-.8 8H21.3z" fill="#c8141b"/>
+    <ellipse cx="32" cy="46" rx="26" ry="6" fill="currentColor"/>
+  </symbol>
+</svg>
+
+</body>
+</html>

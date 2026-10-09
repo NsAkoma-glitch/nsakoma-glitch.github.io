@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 | koma</title>
+<meta name="robots" content="noindex, noai, noimageai">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #111114; --fg: #f4f2ee; --accent: #c8141b; }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100svh; display: grid; place-items: center; text-align: center; padding: 16px;
+    background: var(--bg); color: var(--fg); font-family: "M PLUS 1p", sans-serif;
+  }
+  h1 { font-family: "Dela Gothic One", sans-serif; font-weight: 400; font-size: clamp(5rem, 25vw, 10rem); line-height: 1; text-shadow: 6px 6px 0 var(--accent); }
+  p { margin: 16px 0 32px; }
+  a { display: inline-block; padding: 12px 24px; background: var(--accent); color: #fff; font-weight: 700; text-decoration: none; border: 3px solid var(--fg); box-shadow: 5px 5px 0 var(--fg); }
+  a:hover { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--fg); }
+  .hat { width: 72px; height: 72px; display: block; margin: 0 auto 16px; animation: tip 2s ease-in-out infinite; }
+  @keyframes tip { 50% { transform: rotate(-12deg) translateY(-6px); } }
+  @media (prefers-reduced-motion: reduce) { .hat { animation: none; } }
+</style>
+</head>
+<body>
+  <main>
+    <svg class="hat" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M18 8h28l-3 34H21z" fill="#f4f2ee"/>
+      <path d="M20.5 34h23l-.8 8H21.3z" fill="#c8141b"/>
+      <ellipse cx="32" cy="46" rx="26" ry="6" fill="#f4f2ee"/>
+    </svg>
+    <h1>404</h1>
+    <p>トリック失敗……このページは消えてしまったようです。</p>
+    <a href="/">トップに戻る</a>
+  </main>
+</body>
+</html>

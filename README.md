@@ -1,2 +1,36 @@
-# nsakoma-glitch.github.io
-koma の配信サイト | Twitch で VALORANT / Apex を配信中
+# koma — Twitch FPS Streamer Site
+
+絶叫か、低音か。Twitch で VALORANT / Apex Legends を配信している koma のサイトです。
+
+公開URL: https://nsakoma-glitch.github.io/
+
+## 技術
+フレームワークもビルドも使わず、素の HTML / CSS / JavaScript だけで作っています。
+
+| ファイル | 役割 |
+|---|---|
+| `index.html` | ページの中身と構造 |
+| `style.css` | 見た目。色は CSS 変数で管理し、`data-mode` で 絶叫（ライト）/ 低音（ダーク）を切り替え |
+| `script.js` | 動き。中身は目次付きで 14 ブロックに分けています |
+| `404.html` | ページが見つからないとき用 |
+| `robots.txt` | AI 学習用クローラーをお断り |
+| `favicon.svg` | シルクハットのアイコン |
+| `koma.png` | メインイラスト（自分でアップロード） |
+
+## 仕掛け
+- 市松模様のタイルがめくれるオープニング（1回のアクセスにつき1回）
+- FPS 風の照準カーソルとヒットマーカー（マウス操作のときだけ）
+- 円が広がるモード切り替え（View Transitions API）
+- 名前のスクランブル、3D チルト、スポットライト
+- 配信中なら自動で LIVE 表示＋プレイヤー埋め込み（`?live=1` で試せます）
+- 日本時間の 24 時間ダイヤル（SVG を JS で描画）
+- めくれるトランプ
+- 隠しコマンド: ↑↑↓↓←→←→BA
+- 「動きを減らす」設定の人には、アニメーションを止めます
+
+## ローカルで動かす
+`index.html` をブラウザで開くだけで動きます。
+配信プレイヤーの埋め込みだけは、`python -m http.server` などでサーバーを立てたときか、公開後に動きます。
+
+---
+イラスト © 親友。無断転載・AI 学習への利用を禁止します。

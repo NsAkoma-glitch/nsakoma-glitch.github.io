@@ -1,0 +1,538 @@
+/* =========================================================
+   koma — script.js
+   フレームワークなしの素の JavaScript だけで書いています。
+   <script src="script.js" defer> なので、HTML を読み終わってから実行されます。
+
+   目次
+     0. 共通の道具
+     1. 絶叫 / 低音モードの切り替え
+     2. オープニング演出
+     3. 名前のスクランブル演出
+     4. FPS 風の照準カーソル
+     5. スポットライトと 3D チルト
+     6. スクロールで現れる
+     7. ランクの階段
+     8. 24時間ダイヤル
+     9. トランプをめくる
+    10. 進捗バーとナビの現在地
+    11. 配信中かどうかの確認
+    12. シェアボタン
+    13. 隠しコマンド
+    14. 開発者ツールを開いた人へ
+   ========================================================= */
+
+const TWITCH_ID = 'nsa_koma';
+const SITE_URL = 'https://nsakoma-glitch.github.io/';
+const ACTIVE_FROM = 19; // 活動時間の始まり（19時）
+const ACTIVE_TO = 2;    // 活動時間の終わり（深夜2時）
+
+
+/* ---------- 0. 共通の道具 ---------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+// 「動きを減らす」設定の人と、マウスで操作している人を判定
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+// localStorage はプライベートモードなどで使えないことがあるので try で包む
+const store = {
+  get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); } catch { /* 保存できなくても動く */ } },
+};
+
+// JS が動いていることを CSS に伝える目印
+document.documentElement.classList.add('js');
+if (reducedMotion) document.documentElement.classList.add('no-motion');
+
+// 画面下にメッセージを出す
+let toastTimer;
+function toast(message) {
+  const el = $('#toast');
+  el.textContent = message;
+  el.classList.add('is-show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('is-show'), 2600);
+}
+
+
+/* ---------- 1. 絶叫 / 低音モードの切り替え ---------- */
+const root = document.documentElement;
+const themeColor = $('meta[name="theme-color"]');
+
+function applyMode(mode) {
+  root.dataset.mode = mode;
+  themeColor.setAttribute('content', mode === 'loud' ? '#f4f2ee' : '#111114');
+  store.set('koma-mode', mode);
+}
+
+// 前回選んだモードを復元
+applyMode(store.get('koma-mode') === 'loud' ? 'loud' : 'low');
+
+// クリックした位置から円が広がるように切り替える（View Transitions API）
+function switchMode(mode, x = innerWidth / 2, y = innerHeight / 2) {
+  if (mode === root.dataset.mode) return;
+
+  if (!document.startViewTransition || reducedMotion) {
+    applyMode(mode);
+  } else {
+    const transition = document.startViewTransition(() => applyMode(mode));
+    // 画面の一番遠い角までの距離 = 円の最終的な半径
+    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    transition.ready.then(() => {
+      root.animate(
+        { clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+        { duration: 650, easing: 'cubic-bezier(.16,1,.3,1)', pseudoElement: '::view-transition-new(root)' }
+      );
+    });
+  }
+
+  // 絶叫モードにしたら画面を揺らす
+  if (mode === 'loud' && !reducedMotion) {
+    document.body.classList.remove('shaking');
+    void document.body.offsetWidth; // アニメーションを最初からやり直すための小技
+    document.body.classList.add('shaking');
+  }
+  toast(mode === 'loud' ? '📢 絶叫モード ON！' : '🎧 低音モード……');
+}
+
+// 円の中心。キーボードで押したとき（座標が 0,0）は、ボタンの真ん中から広げる
+function originOf(e) {
+  if (e.clientX || e.clientY) return [e.clientX, e.clientY];
+  const rect = e.currentTarget.getBoundingClientRect();
+  return [rect.left + rect.width / 2, rect.top + rect.height / 2];
+}
+$('#mode-toggle').addEventListener('click', (e) => {
+  switchMode(root.dataset.mode === 'loud' ? 'low' : 'loud', ...originOf(e));
+});
+$$('[data-set-mode]').forEach((card) => {
+  card.addEventListener('click', (e) => switchMode(card.dataset.setMode, ...originOf(e)));
+});
+
+
+/* ---------- 2. オープニング演出 ---------- */
+// 同じタブで2回目以降は出さない（毎回だとしつこいので）
+function playIntro() {
+  const intro = $('#intro');
+  let seen = false;
+  try { seen = sessionStorage.getItem('koma-intro') === '1'; sessionStorage.setItem('koma-intro', '1'); } catch { /* 無視 */ }
+  if (seen || reducedMotion) return Promise.resolve();
+
+  // 画面を 80px くらいのタイルで埋める
+  const size = 80;
+  const cols = Math.ceil(innerWidth / size);
+  const rows = Math.ceil(innerHeight / size);
+  const tiles = $('#intro-tiles');
+  tiles.style.setProperty('--cols', cols);
+  tiles.style.setProperty('--rows', rows);
+
+  // 中心から外側へ向かって順番にめくれるよう、距離で遅延を決める
+  const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
+  const maxDist = Math.hypot(cx, cy);
+  const frag = document.createDocumentFragment();
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const tile = document.createElement('span');
+      if ((r + c) % 2) tile.className = 'w';
+      tile.style.setProperty('--d', `${(Math.hypot(c - cx, r - cy) / maxDist) * 0.5}s`);
+      frag.appendChild(tile);
+    }
+  }
+  tiles.appendChild(frag);
+  intro.classList.add('is-playing');
+
+  return new Promise((resolve) => {
+    const open = () => {
+      intro.classList.add('is-open');
+      setTimeout(() => { intro.remove(); resolve(); }, 1100);
+    };
+    const timer = setTimeout(open, 1000);
+    // クリックでスキップ
+    intro.addEventListener('click', () => { clearTimeout(timer); open(); }, { once: true });
+  });
+}
+
+
+/* ---------- 3. 名前のスクランブル演出 ---------- */
+const nameEl = $('#name');
+const NAME = nameEl.textContent.trim();
+nameEl.innerHTML = [...NAME].map((ch) => `<span class="ch" aria-hidden="true">${ch}</span>`).join('');
+const nameChars = $$('.ch', nameEl);
+const GLYPHS = '♠♥♣♦#%&$@KOMA';
+
+let scrambling = false;
+function scrambleName() {
+  if (scrambling || reducedMotion) return;
+  scrambling = true;
+  const start = performance.now();
+
+  function frame(now) {
+    const t = now - start;
+    let done = 0;
+    nameChars.forEach((span, i) => {
+      if (t > 250 + i * 140) {        // この文字は確定
+        span.textContent = NAME[i];
+        span.classList.remove('is-scrambling');
+        done++;
+      } else {                        // まだランダムな記号
+        span.textContent = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+        span.classList.add('is-scrambling');
+      }
+    });
+    if (done < nameChars.length) requestAnimationFrame(frame);
+    else scrambling = false;
+  }
+  requestAnimationFrame(frame);
+}
+nameEl.addEventListener('mouseenter', scrambleName);
+
+
+/* ---------- 4. FPS 風の照準カーソル ---------- */
+if (finePointer) {
+  const cross = $('#crosshair');
+  root.classList.add('has-crosshair');
+
+  let x = -100, y = -100;   // マウスの実際の位置
+  let cx = x, cy = y;       // 照準が今いる位置（少し遅れて追いかける）
+
+  addEventListener('pointermove', (e) => {
+    x = e.clientX; y = e.clientY;
+    if (cx < 0) { cx = x; cy = y; }
+  });
+  document.addEventListener('pointerleave', () => { x = y = cx = cy = -100; });
+
+  // リンクやボタンの上では照準が開く
+  document.addEventListener('pointerover', (e) => {
+    cross.classList.toggle('is-hover', !!e.target.closest('a, button'));
+  });
+
+  // クリックするとヒットマーカー
+  addEventListener('pointerdown', (e) => {
+    cross.classList.add('is-firing');
+    const hit = document.createElement('div');
+    hit.className = 'hitmarker';
+    hit.style.left = `${e.clientX}px`;
+    hit.style.top = `${e.clientY}px`;
+    document.body.appendChild(hit);
+    hit.addEventListener('animationend', () => hit.remove());
+  });
+  addEventListener('pointerup', () => cross.classList.remove('is-firing'));
+
+  // 毎フレーム、目標に 35% ずつ近づける（なめらかに追従する仕組み）
+  (function loop() {
+    const k = reducedMotion ? 1 : 0.35;
+    cx += (x - cx) * k;
+    cy += (y - cy) * k;
+    cross.style.setProperty('--x', `${cx}px`);
+    cross.style.setProperty('--y', `${cy}px`);
+    requestAnimationFrame(loop);
+  })();
+}
+
+
+/* ---------- 5. スポットライトと 3D チルト ---------- */
+if (finePointer && !reducedMotion) {
+  const hero = $('.hero');
+  hero.addEventListener('pointermove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    hero.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+    hero.style.setProperty('--my', `${e.clientY - rect.top}px`);
+  });
+
+  // data-tilt が付いた要素は、マウスの位置に合わせて傾く
+  $$('[data-tilt]').forEach((el) => {
+    el.addEventListener('pointermove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width;   // 0〜1
+      const py = (e.clientY - rect.top) / rect.height;   // 0〜1
+      el.style.setProperty('--ry', `${(px - 0.5) * 14}deg`);
+      el.style.setProperty('--rx', `${(0.5 - py) * 14}deg`);
+      el.style.setProperty('--gx', `${px * 100}%`);
+      el.style.setProperty('--gy', `${py * 100}%`);
+      el.style.setProperty('--go', '1');
+    });
+    el.addEventListener('pointerleave', () => {
+      ['--rx', '--ry'].forEach((p) => el.style.setProperty(p, '0deg'));
+      el.style.setProperty('--go', '0');
+    });
+  });
+}
+
+
+/* ---------- 6. スクロールで現れる ---------- */
+// 同じ親の中の .reveal には、少しずつ遅れて出るよう遅延を付ける
+$$('.reveal').forEach((el) => {
+  const siblings = $$(':scope > .reveal', el.parentElement);
+  el.style.setProperty('--delay', `${siblings.indexOf(el) * 0.08}s`);
+});
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('is-visible');
+    revealObserver.unobserve(entry.target);
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+$$('.reveal').forEach((el) => revealObserver.observe(el));
+
+
+/* ---------- 7. ランクの階段 ---------- */
+// HTML の data-tiers と data-current から棒グラフを作る
+$$('.game-card').forEach((card) => {
+  const tiers = card.dataset.tiers.split(',');
+  const current = Number(card.dataset.current);
+  const ladder = $('.ladder', card);
+
+  const steps = tiers.map((tier, i) => {
+    const state = i < current ? 'done' : i === current ? 'now' : '';
+    return `<span class="${state}" style="--i:${i}" title="${tier}"></span>`;
+  }).join('');
+
+  ladder.innerHTML = `
+    <div class="ladder-steps" style="--step:${80 / (tiers.length - 1)}%">${steps}</div>
+    <div class="ladder-labels"><span>${tiers[0]}</span><b>▲ ${tiers[current]}</b><span>${tiers.at(-1)}</span></div>`;
+});
+
+
+/* ---------- 8. 24時間ダイヤル ---------- */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const dial = $('#dial');
+const C = 120;  // 中心
+const R = 96;   // 輪の半径
+
+// 「◯時」を時計の角度に変える（0時が真上、右回り）
+const hourToAngle = (h) => (h / 24) * 360 - 90;
+const polar = (angle, radius) => {
+  const rad = (angle * Math.PI) / 180;
+  return [C + radius * Math.cos(rad), C + radius * Math.sin(rad)];
+};
+function svg(tag, attrs, text) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  if (text) el.textContent = text;
+  dial.appendChild(el);
+  return el;
+}
+
+function drawDial() {
+  // 背景の輪
+  svg('circle', { class: 'ring-bg', cx: C, cy: C, r: R });
+
+  // 活動時間の弧（19時 → 26時 = 深夜2時）
+  const end = ACTIVE_TO + 24;
+  const [x1, y1] = polar(hourToAngle(ACTIVE_FROM), R);
+  const [x2, y2] = polar(hourToAngle(end), R);
+  const large = end - ACTIVE_FROM > 12 ? 1 : 0;
+  svg('path', { class: 'ring-on', d: `M${x1} ${y1} A${R} ${R} 0 ${large} 1 ${x2} ${y2}` });
+
+  // 弧の真ん中に月
+  const [mx, my] = polar(hourToAngle((ACTIVE_FROM + end) / 2), R + 20);
+  svg('text', { class: 'moon', x: mx, y: my }, '🌙');
+
+  // 目盛り（6時間ごとに太く、数字付き）
+  for (let h = 0; h < 24; h++) {
+    const major = h % 6 === 0;
+    const [ax, ay] = polar(hourToAngle(h), R - 14);
+    const [bx, by] = polar(hourToAngle(h), R - (major ? 24 : 18));
+    svg('line', { class: major ? 'tick major' : 'tick', x1: ax, y1: ay, x2: bx, y2: by });
+    if (major) {
+      const [lx, ly] = polar(hourToAngle(h), R + 18); // 数字は輪の外側に
+      svg('text', { class: 'hour-label', x: lx, y: ly }, String(h));
+    }
+  }
+
+  // 針と中心
+  const hand = svg('line', { class: 'hand', x1: C, y1: C, x2: C, y2: C - (R - 30) });
+  hand.style.transformOrigin = `${C}px ${C}px`;
+  svg('circle', { class: 'hub', cx: C, cy: C, r: 5 });
+  const timeText = svg('text', { class: 'center-time', x: C, y: C + 38 }, '--:--');
+  svg('text', { class: 'center-sub', x: C, y: C + 52 }, 'JST NOW');
+  return { hand, timeText };
+}
+
+const dialParts = drawDial();
+
+// 見ている人がどこにいても、日本時間で計算する
+function nowInJapan() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const get = (type) => Number(parts.find((p) => p.type === type).value);
+  return { hour: get('hour'), minute: get('minute') };
+}
+
+let isLive = false;
+function updateTime() {
+  const { hour, minute } = nowInJapan();
+  const value = hour + minute / 60;
+  dialParts.hand.style.transform = `rotate(${(value / 24) * 360}deg)`;
+  dialParts.timeText.textContent = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+  const active = hour >= ACTIVE_FROM || hour < ACTIVE_TO;
+  const status = $('#now-status');
+  status.classList.toggle('on', active || isLive);
+  status.textContent = isLive
+    ? '🔴 いままさに配信中！'
+    : active
+      ? '🌙 今は koma の活動時間！配信中かも？'
+      : '☀ 今は準備中。夜にまた会いましょう。';
+}
+updateTime();
+setInterval(updateTime, 30_000);
+
+
+/* ---------- 9. トランプをめくる ---------- */
+$$('.card').forEach((card) => {
+  card.addEventListener('click', () => {
+    const flipped = card.getAttribute('aria-pressed') === 'true';
+    card.setAttribute('aria-pressed', String(!flipped));
+    // 4枚全部めくったらご褒美
+    if ($$('.card[aria-pressed="true"]').length === 4 && !flipped) {
+      toast('🎩 全部めくれました。ようこそ、koma の配信へ！');
+    }
+  });
+});
+
+
+/* ---------- 10. 進捗バーとナビの現在地 ---------- */
+const progress = $('#progress');
+function onScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  progress.style.setProperty('--p', max > 0 ? scrollY / max : 0);
+}
+addEventListener('scroll', onScroll, { passive: true });
+onScroll();
+
+const navLinks = $$('.nav-links a');
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    navLinks.forEach((a) => a.classList.toggle('is-current', a.hash === `#${entry.target.id}`));
+  });
+}, { rootMargin: '-45% 0px -50% 0px' });
+$$('main section[id]').forEach((s) => sectionObserver.observe(s));
+
+
+/* ---------- 11. 配信中かどうかの確認 ---------- */
+// DecAPI という無料サービスを使うと、APIキーなしで配信時間を取得できます。
+// 配信していないときは「nsa_koma is offline」のような文字が返ってきます。
+// ※ URL の最後に ?live=1 を付けると、配信中の見た目を試せます。
+async function checkLive() {
+  const forced = new URLSearchParams(location.search).has('live');
+  let live = forced;
+
+  if (!forced) {
+    try {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 5000); // 5秒で諦める
+      const res = await fetch(`https://decapi.me/twitch/uptime/${TWITCH_ID}`, { signal: controller.signal });
+      const text = (await res.text()).trim();
+      live = res.ok && /\d+\s*(second|minute|hour|day)/i.test(text) && !/offline/i.test(text);
+    } catch {
+      live = false; // 取得に失敗したら「オフライン」扱いにして何もしない
+    }
+  }
+  if (!live) return;
+
+  isLive = true;
+  updateTime();
+
+  const pill = $('#live-pill');
+  pill.classList.add('is-live');
+  $('.live-text', pill).textContent = 'LIVE NOW';
+
+  const watch = $('#hero-watch');
+  watch.classList.add('is-live');
+  $('.btn-label', watch).textContent = 'いま配信中！見に行く';
+
+  // Twitch のプレイヤーを埋め込む（parent に今のドメインが必要）
+  if (location.hostname) {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://player.twitch.tv/?channel=${TWITCH_ID}&parent=${location.hostname}&muted=true`;
+    iframe.title = 'koma の Twitch 配信';
+    iframe.allowFullscreen = true;
+    $('#player').appendChild(iframe);
+    $('#live').hidden = false;
+  }
+}
+checkLive();
+
+
+/* ---------- 12. シェアボタン ---------- */
+const shareText = '絶叫か、低音か。VALORANT / Apex を配信している koma のページ 🎩';
+$('#share-link').href =
+  `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
+
+
+/* ---------- 13. 隠しコマンド ---------- */
+// ↑↑↓↓←→←→BA でマジックショー（スマホはフッターの矢印を押す）
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+let konamiIndex = 0;
+addEventListener('keydown', (e) => {
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  konamiIndex = key === KONAMI[konamiIndex] ? konamiIndex + 1 : (key === KONAMI[0] ? 1 : 0);
+  if (konamiIndex === KONAMI.length) { konamiIndex = 0; magicShow(); }
+});
+$('.hint').addEventListener('click', magicShow);
+
+function magicShow() {
+  toast("🎩 It's showtime! トリック成功！");
+  if (reducedMotion) return;
+
+  const canvas = $('#fx');
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = innerWidth * dpr;
+  canvas.height = innerHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  // トランプのマークと肉球を降らせる
+  const symbols = ['♠', '♥', '♣', '♦', '🐾', '🎩'];
+  const colors = ['#f4f2ee', '#c8141b', '#f2b705', '#141418'];
+  const parts = Array.from({ length: 140 }, () => ({
+    x: innerWidth / 2 + (Math.random() - 0.5) * 120,
+    y: innerHeight + 20,
+    vx: (Math.random() - 0.5) * 16,
+    vy: -(Math.random() * 18 + 14),
+    rot: Math.random() * Math.PI,
+    vr: (Math.random() - 0.5) * 0.3,
+    size: Math.random() * 18 + 18,
+    symbol: symbols[Math.floor(Math.random() * symbols.length)],
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+
+  (function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    let alive = 0;
+    for (const p of parts) {
+      p.vy += 0.45;          // 重力
+      p.vx *= 0.99;          // 空気抵抗
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      if (p.y < innerHeight + 60) alive++;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.font = `${p.size}px serif`;
+      ctx.fillStyle = p.color;
+      ctx.textAlign = 'center';
+      ctx.fillText(p.symbol, 0, 0);
+      ctx.restore();
+    }
+    if (alive) requestAnimationFrame(tick);
+    else ctx.clearRect(0, 0, innerWidth, innerHeight);
+  })();
+}
+
+
+/* ---------- 14. 開発者ツールを開いた人へ ---------- */
+console.log(
+  '%c koma %c\nソースを見てくれてありがとう。\nフレームワークなし、素の HTML / CSS / JS だけで作っています。\nヒント: ↑↑↓↓←→←→BA',
+  'font: 48px "Dela Gothic One", sans-serif; color: #f4f2ee; background: #111114; text-shadow: 3px 3px 0 #c8141b; padding: 4px 12px;',
+  'font: 13px monospace; color: #c8141b;'
+);
+
+
+/* ---------- スタート ---------- */
+$('#year').textContent = new Date().getFullYear();
+playIntro().then(scrambleName);
