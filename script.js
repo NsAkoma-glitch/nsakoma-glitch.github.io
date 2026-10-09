@@ -93,7 +93,7 @@ function switchMode(mode, x = innerWidth / 2, y = innerHeight / 2) {
     void document.body.offsetWidth; // アニメーションを最初からやり直すための小技
     document.body.classList.add('shaking');
   }
-  toast(mode === 'loud' ? '📢 絶叫モード ON！' : '🎧 低音モード……');
+  toast(mode === 'loud' ? '📢 うるkoma 降臨！' : '🎧 チルkoma……');
 }
 
 // 円の中心。キーボードで押したとき（座標が 0,0）は、ボタンの真ん中から広げる

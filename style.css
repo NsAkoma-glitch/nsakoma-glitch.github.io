@@ -438,6 +438,8 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .mode-card-loud:hover .mode-name { animation: shake .2s linear infinite; }
 .mode-card-low .mode-name { letter-spacing: .12em; }
 .mode-desc { max-width: 28em; }
+/* 説明文の最後のひとこと（耳壊したらごめん／惚れんなよ） */
+.mode-punch { font-weight: 800; font-size: 1.1rem; }
 .mode-note {
   justify-self: start;
   font-size: .85rem; font-weight: 800;
