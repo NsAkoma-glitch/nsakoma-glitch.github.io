@@ -259,6 +259,34 @@
           </span>
         </button>
       </div>
+
+      <!-- フォロワー限定のジョーカー（仕組みは script.js の 15番） -->
+      <div class="joker-area reveal" id="joker-area">
+        <div class="joker-info">
+          <p class="joker-kicker">FOLLOWERS ONLY</p>
+          <h3 class="joker-title">ジョーカー 🃏</h3>
+          <p class="joker-desc">Twitch で koma をフォローしてくれている人だけがめくれる、秘密のカード。<br>
+            押すと Twitch のログイン画面に移動して、フォローしているか確認します。</p>
+          <p class="joker-privacy">※ ログイン情報はフォローの確認にだけ使い、koma にも誰にも送られません。</p>
+          <p class="joker-status" id="joker-status" role="status" aria-live="polite"></p>
+        </div>
+        <button class="card joker-card is-locked" id="joker" type="button" aria-pressed="false" aria-label="フォロワー限定のジョーカーカード">
+          <span class="card-inner">
+            <span class="card-back joker-back">
+              <span class="joker-lock">🔒 FOLLOWERS ONLY</span>
+            </span>
+            <span class="card-front joker-front" data-suit="🃏">
+              <span class="card-corner">JOKER</span>
+              <span class="card-text">
+                <!-- ↓ ここがフォロワー限定のメッセージ。koma さんの言葉に差し替える -->
+                フォローありがとう！<br>
+                ここはフォロワーだけが見られる秘密の場所。<br>
+                中身はこれから追加していくので、お楽しみに！
+              </span>
+            </span>
+          </span>
+        </button>
+      </div>
     </div>
   </section>
 

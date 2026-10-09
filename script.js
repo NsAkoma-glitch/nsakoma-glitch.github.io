@@ -19,10 +19,13 @@
     12. シェアボタン
     13. 隠しコマンド
     14. 開発者ツールを開いた人へ
+    15. フォロワー限定のジョーカー
    ========================================================= */
 
 const TWITCH_ID = 'nsa_koma';
 const SITE_URL = 'https://nsakoma-glitch.github.io/';
+// Twitch の開発者ページで登録したアプリの ID（公開しても大丈夫な値）
+const TWITCH_CLIENT_ID = '1hu600oiivf27lvppofnp9og8bs0y9';
 const ACTIVE_FROM = 19; // 活動時間の始まり（19時）
 const ACTIVE_TO = 2;    // 活動時間の終わり（深夜2時）
 
@@ -385,12 +388,12 @@ setInterval(updateTime, 30_000);
 
 
 /* ---------- 9. トランプをめくる ---------- */
-$$('.card').forEach((card) => {
+$$('.cards .card').forEach((card) => {
   card.addEventListener('click', () => {
     const flipped = card.getAttribute('aria-pressed') === 'true';
     card.setAttribute('aria-pressed', String(!flipped));
     // 4枚全部めくったらご褒美
-    if ($$('.card[aria-pressed="true"]').length === 4 && !flipped) {
+    if ($$('.cards .card[aria-pressed="true"]').length === 4 && !flipped) {
       toast('🎩 全部めくれました。ようこそ、koma の配信へ！');
     }
   });
@@ -533,6 +536,125 @@ console.log(
   'font: 48px "Dela Gothic One", sans-serif; color: #f4f2ee; background: #111114; text-shadow: 3px 3px 0 #c8141b; padding: 4px 12px;',
   'font: 13px monospace; color: #c8141b;'
 );
+
+
+/* ---------- 15. フォロワー限定のジョーカー ---------- */
+// 仕組み（サーバーなしで動く「インプリシット・グラント」という方法）
+//   1. ジョーカーを押す → Twitch のログイン画面へ移動
+//   2. ログインすると、このサイトに戻ってくる。URL の # の後ろに「アクセストークン」が付いている
+//   3. そのトークンで Twitch API に「この人は koma をフォローしてる？」と聞く
+//   4. フォローしていればカードがめくれる
+// トークンはこのタブの中（sessionStorage）にだけ置き、koma にも誰にも送りません。
+const joker = $('#joker');
+const jokerStatus = $('#joker-status');
+const JOKER_TOKEN_KEY = 'koma-twitch-token';
+const JOKER_STATE_KEY = 'koma-twitch-state';
+
+const session = {
+  get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { sessionStorage.setItem(key, value); } catch { /* 無視 */ } },
+  remove(key) { try { sessionStorage.removeItem(key); } catch { /* 無視 */ } },
+};
+
+function setJokerStatus(html, kind = '') {
+  jokerStatus.innerHTML = html;
+  jokerStatus.dataset.kind = kind;
+}
+
+// Twitch のログイン画面へ
+function loginWithTwitch() {
+  // state: なりすまし防止のための使い捨ての合言葉。戻ってきたときに同じか確かめる
+  const state = crypto.getRandomValues(new Uint32Array(4)).join('-');
+  session.set(JOKER_STATE_KEY, state);
+  const params = new URLSearchParams({
+    client_id: TWITCH_CLIENT_ID,
+    redirect_uri: SITE_URL,
+    response_type: 'token',
+    scope: 'user:read:follows',
+    state,
+  });
+  location.href = `https://id.twitch.tv/oauth2/authorize?${params}`;
+}
+
+// Twitch API を呼ぶ小さな関数
+async function twitchApi(path, token) {
+  const res = await fetch(`https://api.twitch.tv/helix/${path}`, {
+    headers: { Authorization: `Bearer ${token}`, 'Client-Id': TWITCH_CLIENT_ID },
+  });
+  if (res.status === 401) throw new Error('expired');
+  if (!res.ok) throw new Error(`twitch ${res.status}`);
+  return (await res.json()).data;
+}
+
+// フォローしているか確認して、していればめくる
+async function checkFollow(token) {
+  setJokerStatus('🔍 フォローしているか確認中…');
+  try {
+    const [me] = await twitchApi('users', token);                       // ログインした人
+    const [koma] = await twitchApi(`users?login=${TWITCH_ID}`, token);  // koma
+    const isKoma = me.id === koma.id;
+    const follows = isKoma || (await twitchApi(
+      `channels/followed?user_id=${me.id}&broadcaster_id=${koma.id}`, token)).length > 0;
+
+    if (follows) {
+      joker.setAttribute('aria-pressed', 'true');
+      joker.classList.remove('is-locked');
+      setJokerStatus(`🃏 ${escapeHtml(me.display_name)} さん、フォローありがとう！`, 'ok');
+      toast('🃏 ジョーカー解放！');
+    } else {
+      setJokerStatus(
+        `😢 ${escapeHtml(me.display_name)} さんは、まだフォローしていないみたい…<br>
+         <a href="https://www.twitch.tv/${TWITCH_ID}" target="_blank" rel="noopener">Twitch でフォロー</a>してから、もう一度カードを押してね！`,
+        'ng');
+    }
+  } catch (err) {
+    if (err.message === 'expired') {
+      session.remove(JOKER_TOKEN_KEY); // 期限切れ → もう一度ログインしてもらう
+      setJokerStatus('ログインの期限が切れました。もう一度カードを押してね。', 'ng');
+    } else {
+      setJokerStatus('うまく確認できませんでした。時間をおいて、もう一度押してね。', 'ng');
+    }
+  }
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+joker.addEventListener('click', () => {
+  if (!joker.classList.contains('is-locked')) {
+    // 解放済みなら、ふつうのカードと同じように裏返せる
+    joker.setAttribute('aria-pressed', String(joker.getAttribute('aria-pressed') !== 'true'));
+    return;
+  }
+  const token = session.get(JOKER_TOKEN_KEY);
+  if (token) checkFollow(token);
+  else loginWithTwitch();
+});
+
+// Twitch のログイン画面から戻ってきたときの処理
+(function handleTwitchReturn() {
+  const hash = new URLSearchParams(location.hash.slice(1));
+  const query = new URLSearchParams(location.search);
+  const state = hash.get('state') || query.get('state');
+  if (!state) return;
+
+  const expected = session.get(JOKER_STATE_KEY);
+  session.remove(JOKER_STATE_KEY);
+  // URL からトークンを消しておく（履歴やスクショに残らないように）
+  history.replaceState(null, '', location.pathname + '#joker-area');
+  $('#joker-area').scrollIntoView();
+
+  if (state !== expected) return; // 合言葉が違う → 無視
+  if (query.get('error') || hash.get('error')) {
+    setJokerStatus('ログインがキャンセルされました。', 'ng');
+    return;
+  }
+  const token = hash.get('access_token');
+  if (!token) return;
+  session.set(JOKER_TOKEN_KEY, token);
+  checkFollow(token);
+})();
 
 
 /* ---------- スタート ---------- */
