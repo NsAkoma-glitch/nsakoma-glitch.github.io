@@ -96,6 +96,8 @@
         <p class="games-row"><span class="games-label">MAIN</span><span class="tag tag-main">VALORANT</span><span class="tag tag-main">Apex Legends</span></p>
         <p class="games-row"><span class="games-label">OTHER</span><span class="tag">雑談</span><span class="tag">いろんなゲーム</span></p>
       </div>
+      <!-- 今のフォロワー数と次の目標（script.js が入れます。取れなかったら出ません） -->
+      <div class="follow-goal" id="follow-goal" hidden></div>
       <div class="hero-btns">
         <a class="btn btn-primary" id="hero-watch" href="https://www.twitch.tv/nsa_koma" target="_blank" rel="noopener">
           <span class="btn-icon">▶</span><span class="btn-label">Twitch で見る</span>
@@ -269,8 +271,6 @@
             押すと Twitch のログイン画面に移動して、フォローしているか確認します。</p>
           <p class="joker-privacy">※ ログイン情報はフォローの確認にだけ使い、koma にも誰にも送られません。</p>
           <p class="joker-status" id="joker-status" role="status" aria-live="polite"></p>
-          <!-- 今のフォロワー数と、次の目標までの人数（script.js が入れます） -->
-          <div class="joker-followers" id="joker-followers" hidden></div>
           <!-- フォロー期間ごとのメッセージ一覧（script.js の JOKER_TIERS から作られます） -->
           <ol class="joker-tiers" id="joker-tiers" hidden></ol>
         </div>

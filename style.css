@@ -335,6 +335,16 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 
 /* 遊ぶゲーム：MAIN（メイン）と OTHER（その他）の2段 */
 .games-line { display: grid; gap: 8px; margin-top: 16px; }
+
+/* フォロワー数と次の目標（トップ） */
+.follow-goal { width: min(380px, 100%); margin-top: 24px; }
+.follow-goal-now { font-weight: 800; }
+.follow-goal-now b { font-family: var(--font-mono); font-size: 1.5em; color: var(--twitch); margin-inline: 2px; }
+.follow-goal-next { color: var(--muted); font-size: .85rem; }
+.follow-goal-next b { color: var(--gold); font-size: 1.15em; }
+:root[data-mode="loud"] .follow-goal-next b { color: var(--accent); }
+.follow-goal-bar { height: 8px; margin-top: 8px; background: var(--line); overflow: hidden; }
+.follow-goal-bar i { display: block; height: 100%; width: calc(var(--p) * 100%); background: linear-gradient(90deg, var(--twitch), var(--gold)); }
 .games-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .games-label {
   width: 4.5em;
@@ -680,14 +690,6 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .joker-days { font-size: 1rem; }
 .joker-next { font-size: .75rem; font-weight: 400; color: #a5a3a0; }
 
-/* フォロワー数と次の目標 */
-.joker-followers { margin-top: 16px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); text-align: left; }
-.joker-followers b { font-family: var(--font-mono); font-size: 1.3em; color: var(--twitch); }
-.joker-followers-goal { color: var(--muted); font-size: .9rem; margin-top: 2px; }
-.joker-followers-goal b { color: var(--gold); font-size: 1.1em; }
-.joker-goal-bar { height: 8px; margin-top: 10px; background: var(--line); overflow: hidden; }
-.joker-goal-bar i { display: block; height: 100%; width: calc(var(--p) * 100%); background: linear-gradient(90deg, var(--twitch), var(--gold)); }
-
 /* ランクごとのメッセージ一覧 */
 .joker-tiers { list-style: none; margin-top: 20px; display: grid; gap: 8px; text-align: left; }
 .joker-tier { display: grid; grid-template-columns: 7.5em 1fr; gap: 12px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); }
@@ -803,6 +805,7 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   .credit { text-align: center; }
   .games-line { justify-content: center; }
   .games-row { justify-content: center; }
+  .follow-goal { margin-inline: auto; }
   /* スマホ：Twitch は横いっぱい、X と YouTube はその下に半分ずつ並べる */
   .hero-btns { display: grid; grid-template-columns: 1fr 1fr; width: min(340px, 100%); margin-inline: auto; }
   .hero-btns .btn { justify-content: center; padding-inline: 12px; }
