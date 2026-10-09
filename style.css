@@ -565,7 +565,8 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 
 
 /* ---------- 10. 初見さんへ（トランプ） ---------- */
-.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: stretch; /* 同じ段のカードは高さをそろえる */ }
+/* grid-auto-rows: 1fr で、全部の段を一番高いカードに合わせる → 4枚とも同じ大きさ */
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 20px; align-items: stretch; }
 /* 表と裏を同じマスに重ねる（grid-area: 1 / 1）。
    absolute で重ねるのと違って、文が長いときはカードが縦に伸びてくれます */
 .card { display: grid; width: 100%; perspective: 1000px; aspect-ratio: 5 / 7; text-align: left; } /* 幅は列に合わせ、縦横比は「最低これくらいの高さ」として使う */
