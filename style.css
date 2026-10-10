@@ -879,13 +879,18 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
   background: var(--brand, var(--accent)); transform: translateY(101%);
   transition: transform .35s var(--ease-out);
 }
-/* マウスを乗せたときに、各サービスの色で塗られる */
-.link-card[data-brand="twitch"] { --brand: var(--twitch); }
+/* マウスを乗せたときに、各サービスの色で塗られる
+   --brand：塗る色 / --brand-ink：その上の文字の色（明るい色の上は黒い文字に） */
+.link-card[data-brand="twitch"]  { --brand: var(--twitch); }
+.link-card[data-brand="x"]       { --brand: #000000; }
 .link-card[data-brand="youtube"] { --brand: var(--youtube); }
+.link-card[data-brand="amazon"]  { --brand: #ff9900; --brand-ink: #141418; }
+.link-card[data-brand="share"]   { --brand: #2fbfb2; --brand-ink: #141418; }
 .link-card > * { position: relative; z-index: 1; }
 .link-card:hover { border-color: var(--brand, var(--accent)); transform: translateY(-4px); }
+.link-card[data-brand="x"]:hover { border-color: var(--fg); } /* 黒い背景でも枠が見えるように */
 .link-card:hover::before { transform: translateY(0); }
-.link-card:hover, .link-card:hover .link-kicker, .link-card:hover .link-desc { color: #fff; }
+.link-card:hover, .link-card:hover .link-kicker, .link-card:hover .link-desc { color: var(--brand-ink, #fff); }
 .link-kicker { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .2em; color: var(--accent-2); transition: color .2s; }
 .link-card strong { font-size: 1.4rem; font-weight: 800; }
 .link-desc { color: var(--muted); font-size: .9rem; transition: color .2s; }
