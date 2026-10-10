@@ -848,6 +848,8 @@ main { overflow-x: clip; } /* 斜めの帯が横にはみ出さないように *
 .rule-head.ok { background: #2fa36b; color: #fff; }
 .rule-head.ask { background: var(--twitch); color: #fff; }
 .rule-head.ng { background: var(--accent); color: #fff; }
+.rule-head.memo { background: var(--gold); color: #141418; }
+.rule-memo { margin-top: 8px; font-size: .92rem; }
 .rule-card ul { margin: 8px 0 0 1.2em; display: grid; gap: 4px; font-size: .92rem; }
 .rule-links { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 2px; font-size: .85rem; }
 .rule-links a { color: var(--muted); text-underline-offset: 3px; }
