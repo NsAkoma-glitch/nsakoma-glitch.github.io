@@ -493,6 +493,27 @@ const shareText = 'うるせーkoma か、チルいkoma か。VALORANT / Apex �
 $('#share-link').href =
   `https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`;
 
+// ハッシュタグのコピーボタン
+$$('[data-copy]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const text = btn.dataset.copy;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // 古いブラウザ用：見えない入力欄を作ってコピーする
+      const area = Object.assign(document.createElement('textarea'), { value: text });
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    btn.textContent = 'コピーした！';
+    btn.classList.add('is-done');
+    toast(`📋 ${text} をコピーしたよ！`);
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('is-done'); }, 1800);
+  });
+});
+
 
 /* ---------- 13. 隠しコマンド ---------- */
 // ↑↑↓↓←→←→BA でマジックショー（スマホはフッターの矢印を押す）
